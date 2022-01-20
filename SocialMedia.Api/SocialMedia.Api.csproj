@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.8" />
@@ -17,6 +17,6 @@
     <ProjectReference Include="..\SocialMedia.Core\SocialMedia.Core.csproj" />
     <ProjectReference Include="..\SocialMedia.infrastructure\SocialMedia.Infrastructure.csproj" />
   </ItemGroup>
-
+  
 
 </Project>

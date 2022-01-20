@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,9 +9,15 @@ namespace SocialMedia.Infrastructure.Filters
 {
     public class ValidationsFilter : IAsyncActionFilter
     {
-        public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            throw new NotImplementedException();
+            if (!context.ModelState.IsValid)
+            {
+                context.Result = new BadRequestObjectResult(context.ModelState);
+                return;
+            }
+            
+            await next();
         }
     }
 }
