@@ -43,7 +43,7 @@ namespace SocialMedia.Api
 
             services.AddTransient<IPostRepository, PostRepository>();
 
-            //Validaciones
+            //Validaciones (Fluent Validation)
             services.AddMvc(option =>
             {
                 option.Filters.Add<ValidationsFilter>();
