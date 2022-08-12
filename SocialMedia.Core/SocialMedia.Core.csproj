@@ -6,11 +6,8 @@
 
   <ItemGroup>
     <Compile Remove="Enumerations\**" />
-    <Compile Remove="Exceptions\**" />
     <EmbeddedResource Remove="Enumerations\**" />
-    <EmbeddedResource Remove="Exceptions\**" />
     <None Remove="Enumerations\**" />
-    <None Remove="Exceptions\**" />
   </ItemGroup>
 
 </Project>
