@@ -1,6 +1,8 @@
-﻿using SocialMedia.Core.Entities;
+﻿using SocialMedia.Core.CustomEntities;
+using SocialMedia.Core.Entities;
 using SocialMedia.Core.Exceptions;
 using SocialMedia.Core.Interfaces;
+using SocialMedia.Core.QueryFilters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,9 +24,27 @@ namespace SocialMedia.Core.Services
             return await _unitOfWork.PostRepository.GetById(id);
         }
 
-        public IEnumerable<Post> GetPosts()
+        public PageList<Post> GetPosts(PostQueryFilter filters)
         {
-            return _unitOfWork.PostRepository.GetAll();
+            
+            var post = _unitOfWork.PostRepository.GetAll();
+
+            if(filters.UserId != null)
+            {
+                post = post.Where(x => x.UserId == filters.UserId);
+            }
+            if (filters.Date != null)
+            {
+                post = post.Where(x => x.Date.ToShortDateString() == filters.Date?.ToShortDateString());
+            }
+            if (filters.Description != null)
+            {
+                post = post.Where(x => x.Description.ToLower().Contains(filters.Description.ToLower()));
+            }
+
+            var pagePosts = PageList<Post>.Create(post, filters.PageNumber, filters.PageSize);
+
+            return pagePosts;
         }
 
         public async Task InsertPost(Post post)
