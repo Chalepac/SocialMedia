@@ -1,17 +1,24 @@
 using System;
+using System.IO;
+using System.Reflection;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using SocialMedia.Core.CustomEntities;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Core.Services;
 using SocialMedia.Infrastructure.Data;
 using SocialMedia.Infrastructure.Filters;
+using SocialMedia.Infrastructure.Interfaces;
 using SocialMedia.Infrastructure.Repositories;
+using SocialMedia.Infrastructure.Services;
 
 namespace SocialMedia.Api
 {
@@ -37,10 +44,13 @@ namespace SocialMedia.Api
             }).AddNewtonsoftJson(option =>
             {
                 option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             }).ConfigureApiBehaviorOptions(option =>
             {
                 //option.SuppressModelStateInvalidFilter = true;
             });
+
+            services.Configure<PaginationOptions>(Configuration.GetSection("Pagination"));
 
             //Se configura el contexto de la BD con la cadena de conexion correspondiente
             services.AddDbContext<SocialMediaContext>(options => options.UseSqlServer(Configuration.GetConnectionString("SocialMediaConnection")));
@@ -48,6 +58,23 @@ namespace SocialMedia.Api
             services.AddTransient<IPostService, PostService>();
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IUriService>(provider =>
+            {
+                var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
+                var absoluteUri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+
+                return new UriService(absoluteUri);
+            });
+
+            services.AddSwaggerGen(doc =>
+            {
+                doc.SwaggerDoc("v1", new OpenApiInfo { Title = "Social Media API", Version = "v1" });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                doc.IncludeXmlComments(xmlPath);
+            });
 
             //Validaciones (Fluent Validation)
             services.AddMvc(option =>
@@ -67,6 +94,14 @@ namespace SocialMedia.Api
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Media API");
+                options.RoutePrefix = string.Empty;
+            });
 
             app.UseRouting();
 
